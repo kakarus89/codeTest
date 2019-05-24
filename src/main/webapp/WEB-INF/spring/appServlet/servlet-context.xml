@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd
+		">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+
+	<mvc:annotation-driven/>
+
+	<mvc:default-servlet-handler/>
+	<!--  com.tbu.common.Interceptor  -->
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/*"/>
+			<bean class="com.aside.common.Interceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<mvc:resources mapping="/resources/**" location="/resources/"/>
+
+	<bean id="JSON" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
+
+	<bean id="beanNameResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver" p:order="0"/>
+
+	<aop:aspectj-autoproxy/>
+
+	<bean id="testAop"
+		  class="com.aside.aop.RequestProcessAspect"/> <!-- @Aspect가 Spring것이 아니어서 bean으로 인식하게 하려면 직접 등록해줘야함 -->
+
+	<bean id="downloadView" class="com.aside.util.FileUpDownload"/>
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp"/>
+		<property name="contentType" value="text/html; charset=UTF-8"/>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource"
+				  ref="dataSource"/>   <!-- name은 선언한 클래스 안에 setDataSource 라는 메소드가 ref datasource 는 root 안의 bean id 중에 datasource를 찾아서 그 메소드에 넣어줌 -->
+		<property name="configLocation" value="/WEB-INF/mybatisConfig.xml"/>
+	</bean>
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory"></constructor-arg>
+	</bean>
+
+	<bean id="SampleDao"
+		  class="org.mybatis.spring.mapper.MapperFactoryBean">  <!-- 어떤 인터페이스와 어떤 xml이 매핑되는지 알려줌, 인터페이스 갯수만큼 복수개를 만들어 줘야함 -->
+		<property name="mapperInterface" value="com.aside.dao.SampleDao"></property>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate"></property>
+	</bean>
+
+	<bean id="BoardDao"
+		  class="org.mybatis.spring.mapper.MapperFactoryBean">  <!-- 어떤 인터페이스와 어떤 xml이 매핑되는지 알려줌, 인터페이스 갯수만큼 복수개를 만들어 줘야함 -->
+		<property name="mapperInterface" value="com.aside.dao.BoardDao"></property>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate"></property>
+	</bean>
+
+	<bean id="FileDao"
+		  class="org.mybatis.spring.mapper.MapperFactoryBean">  <!-- 어떤 인터페이스와 어떤 xml이 매핑되는지 알려줌, 인터페이스 갯수만큼 복수개를 만들어 줘야함 -->
+		<property name="mapperInterface" value="com.aside.dao.FileDao"></property>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate"></property>
+	</bean>
+
+
+	<aop:aspectj-autoproxy/>
+
+
+	<!-- Exception을 처리하기 위한 HandlerExceptionResolver -->
+
+	<bean id="multipartResolver"
+		  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize">
+			<value>100000000</value>
+		</property>
+		<property name="maxInMemorySize">
+			<value>100000000</value>
+		</property>
+	</bean>
+
+	<bean id="messageSource"
+		  class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<array>
+				<value>properties/messages</value>
+			</array>
+		</property>
+		<!-- 몇초에 한번씩 메세지의 파일을 리로드 할 것인지 Check -->
+		<property name="cacheSeconds" value="100"/>
+	</bean>
+
+
+	<context:component-scan base-package="com.aside"/>
+	<task:scheduler id="jobScheduler" pool-size="10"/>
+	<task:annotation-driven scheduler="jobScheduler"/>
+
+
+</beans>

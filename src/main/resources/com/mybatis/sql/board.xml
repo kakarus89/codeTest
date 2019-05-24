@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aside.dao.BoardDao">
+
+
+
+    <select id="boardSerach" resultType="BoardModel" parameterType="BoardForm">
+        select
+           *
+        from
+           boardtest
+        <where>
+            USE_YN = 'Y'
+           <if test="seq != null">
+             AND seq = #{seq}
+           </if>
+        </where>
+        ORDER BY reg_date DESC
+        <if test="seq == null">
+               limit #{startNum} , #{endNum}
+           </if>
+
+    </select>
+    <insert id="boardWrite" parameterType="BoardForm" useGeneratedKeys="true" keyProperty="seq">
+            INSERT INTO  boardtest
+                (
+                    b_title ,
+                    b_contents ,
+                    b_regdate ,
+                    b_writename ,
+                    reg_date
+                 )
+             VALUES
+                 (
+                    #{b_title},
+                    #{b_contents},
+                    now(),
+                    #{b_writename},
+                    now()
+                  );
+    </insert>
+
+    <delete id="boardDelete" parameterType="BoardForm">
+        DELETE FROM boardtest WHERE SEQ = #{seq} AND USE_YN = 'Y'
+    </delete>
+
+
+    <update id="boardUpdate" parameterType="BoardForm">
+        UPDATE
+            boardtest
+        SET
+            b_title =  #{b_title},
+            b_contents =  #{b_contents},
+            b_writename =  #{b_writename},
+            b_regdate = now()
+        WHERE
+            boardtest.seq = #{seq}
+        AND
+            USE_YN = 'Y'
+    </update>
+
+    <update id="boardViewCount" parameterType="BoardForm">
+        UPDATE
+            boardtest
+        SET
+            b_views =  b_views+1
+        WHERE
+            boardtest.seq = #{seq}
+        AND
+            USE_YN = 'Y'
+    </update>
+
+
+    <select id="boardTotalCount" resultType="int">
+        select
+          count(*) as cnt
+        from
+          boardtest
+        WHERE
+          USE_YN = 'Y'
+    </select>
+
+    <select id="boardContentAttachList" resultType="BoardModel" parameterType="BoardForm">
+        select
+          *
+        from
+           boardattach
+        WHERE
+          USE_YN = 'Y'
+        and
+          boardSeq = #{seq}
+        order by reg_date desc
+    </select>
+
+    <insert id="boardAttacFileUpload" parameterType="BoardForm" useGeneratedKeys="true" keyProperty="seq">
+        INSERT INTO boardattach
+        (
+            boardSeq ,
+            fileName ,
+            reg_date
+        )
+        VALUES
+        (
+            #{seq},
+            #{fileName},
+            now()
+        )
+    </insert>
+
+    <delete id="boardAttachFileDelete">
+        DELETE FROM boardattach where boardSeq = #{seq} and fileName = #{fileName}
+    </delete>
+
+
+</mapper> 
