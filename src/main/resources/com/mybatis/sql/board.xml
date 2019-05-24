@@ -8,7 +8,7 @@
         select
            *
         from
-           boardtest
+           board
         <where>
             USE_YN = 'Y'
            <if test="seq != null">
@@ -22,50 +22,57 @@
 
     </select>
     <insert id="boardWrite" parameterType="BoardForm" useGeneratedKeys="true" keyProperty="seq">
-            INSERT INTO  boardtest
-                (
-                    b_title ,
-                    b_contents ,
-                    b_regdate ,
-                    b_writename ,
-                    reg_date
-                 )
-             VALUES
-                 (
-                    #{b_title},
-                    #{b_contents},
-                    now(),
-                    #{b_writename},
-                    now()
-                  );
+        INSERT INTO  board
+            (
+                b_title ,
+                b_contents ,
+                b_regdate ,
+                b_writename ,
+                reg_date
+             )
+         VALUES
+             (
+                #{b_title},
+                #{b_contents},
+                now(),
+                #{b_writename},
+                now()
+              );
     </insert>
 
     <delete id="boardDelete" parameterType="BoardForm">
-        DELETE FROM boardtest WHERE SEQ = #{seq} AND USE_YN = 'Y'
+        UPDATE
+            board
+        SET
+            USE_YN = 'N'
+        WHERE
+            seq = #{seq}
+        AND
+            USE_YN = 'Y'
     </delete>
 
 
     <update id="boardUpdate" parameterType="BoardForm">
         UPDATE
-            boardtest
+            board
         SET
             b_title =  #{b_title},
             b_contents =  #{b_contents},
             b_writename =  #{b_writename},
             b_regdate = now()
         WHERE
-            boardtest.seq = #{seq}
+            seq = #{seq}
         AND
             USE_YN = 'Y'
     </update>
 
     <update id="boardViewCount" parameterType="BoardForm">
         UPDATE
-            boardtest
+            board
         SET
             b_views =  b_views+1
         WHERE
-            boardtest.seq = #{seq}
+            seq = #{seq}
         AND
             USE_YN = 'Y'
     </update>
@@ -75,7 +82,7 @@
         select
           count(*) as cnt
         from
-          boardtest
+          board
         WHERE
           USE_YN = 'Y'
     </select>
@@ -108,7 +115,16 @@
     </insert>
 
     <delete id="boardAttachFileDelete">
-        DELETE FROM boardattach where boardSeq = #{seq} and fileName = #{fileName}
+        UPDATE
+            boardattach
+        SET
+            use_yn = 'N'
+        WHERE
+            boardSeq = #{seq}
+        AND
+            fileName = #{fileName}
+        AND
+            use_yn = 'Y'
     </delete>
 
 

@@ -103,6 +103,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void boardDelete(ModelMap model, BoardForm boardForm) {
         boardDao.boardDelete(boardForm);
+        boardDao.boardAttachFileDelete(boardForm);
     }
 
     @Override

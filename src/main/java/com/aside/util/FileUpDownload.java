@@ -19,6 +19,13 @@ public class FileUpDownload {
 
     public void fileUploadPlay(MultipartFile file, String path, String fileName) throws Exception {
 
+        File isCkeck = new File(path);
+        if(!isCkeck.exists() || !isCkeck.isDirectory()){
+            isCkeck.mkdir();
+        }
+
+        isCkeck = null;
+
 
         //파일이 저장될 path 설정
         try{
